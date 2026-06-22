@@ -74,3 +74,4 @@ class UserProfileData(BaseModel):
     parking_pending: Optional[dict] = None  # {"text": str, "category": str} durante il flusso parcheggio
     scenario_c_data: Optional[dict] = None  # risposte temporanee durante Scenario C
     weekly_review_data: Optional[dict] = None  # dati temporanei durante la revisione settimanale
+    free_msg_pending: Optional[dict] = None  # {"text": str, "category": str} durante conferma messaggio libero

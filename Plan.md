@@ -1,7 +1,7 @@
 # La Rotta — Piano di Implementazione MVP
 
 > **Aggiornato:** 2026-06-21  
-> **Stato generale:** 🟡 In corso — Fase 11/13 completata — 144 test verdi
+> **Stato generale:** 🟡 In corso — Fase 12/13 completata — 157 test verdi
 
 ---
 
@@ -29,7 +29,7 @@
 | 9 | **Scenario C — Blocchi** | 3 branch (stanchezza/paura/confusione) + libreria sblocchi | 6, 8 | 🟢 |
 | 10 | **Revisione Settimanale** | Riepilogo dati, parcheggio, pattern recognition, riassunto narrativo | 8, 9 | 🟢 |
 | 11 | **Scheduler & Re-engagement** | APScheduler attivo, re-engagement a 2 fasi funzionante | 6, 7, 10 | 🟢 |
-| 12 | **Messaggi Liberi** | Classificazione + routing a flusso corretto per tutte le categorie | 8, 9 | 🔴 |
+| 12 | **Messaggi Liberi** | Classificazione + routing a flusso corretto per tutte le categorie | 8, 9 | 🟢 |
 | 13 | **Test Integrazione & Deploy** | Test end-to-end passano, bot live su Railway, RLS attivo | tutte | 🔴 |
 
 ---

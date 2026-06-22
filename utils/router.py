@@ -96,6 +96,10 @@ async def _route(
         from handlers.re_engagement import handle_step, _detect_spontaneous_return
         await handle_step(update, context, user_id, telegram_id, state, text, profile)
 
+    elif state.startswith("FREE_MSG"):
+        from handlers.free_message import handle_step
+        await handle_step(update, context, user_id, telegram_id, state, text, profile)
+
     else:
         # Controlla ritorno spontaneo dopo silenzio lungo
         from handlers.re_engagement import _detect_spontaneous_return

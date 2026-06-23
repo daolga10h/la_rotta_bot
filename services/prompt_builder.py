@@ -18,6 +18,11 @@ def build_system_prompt(
     sections = [BASE_PROMPT]
 
     # Profilo utente
+    if profile.user_name:
+        gender_str = {"M": "uomo", "F": "donna"}.get(profile.user_gender or "", "")
+        gender_note = f" ({gender_str} — usa il genere corretto negli aggettivi)" if gender_str else ""
+        sections.append(f"\n[NOME UTENTE]\n{profile.user_name}{gender_note}")
+
     obj_lines = []
     for obj in sorted(profile.objectives, key=lambda o: o.rank):
         hours = f" ({obj.weekly_hours_target}h/sett.)" if obj.weekly_hours_target else ""

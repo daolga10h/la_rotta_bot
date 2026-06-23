@@ -100,6 +100,14 @@ async def _route(
         from handlers.free_message import handle_step
         await handle_step(update, context, user_id, telegram_id, state, text, profile)
 
+    elif text in ("Sì, iniziamo", "Voglio correggere qualcosa") and not profile.onboarding_complete:
+        # Safety net: pulsanti onboarding ricevuti con stato IDLE — riprendi dall'ultimo step
+        from utils.state_manager import set_state as _set_state
+        _set_state(user_id, f"ONBOARDING_{profile.onboarding_step or 7}")
+        from handlers.onboarding import handle_step
+        await handle_step(update, context, user_id, telegram_id,
+                          f"ONBOARDING_{profile.onboarding_step or 7}", text, profile)
+
     else:
         # Controlla ritorno spontaneo dopo silenzio lungo
         from handlers.re_engagement import _detect_spontaneous_return

@@ -1,3 +1,4 @@
+import asyncio
 import logging
 import time
 import anthropic
@@ -6,6 +7,20 @@ from models.user_profile import UserProfileData
 from services.prompt_builder import build_system_prompt
 
 logger = logging.getLogger(__name__)
+
+
+async def generate_response_async(
+    profile: UserProfileData,
+    flow_name: str,
+    flow_instructions: str,
+    session_messages: list[dict],
+    weekly_summaries: list[dict] | None = None,
+) -> tuple[str, bool]:
+    """Versione async di generate_response — non blocca l'event loop."""
+    return await asyncio.to_thread(
+        generate_response,
+        profile, flow_name, flow_instructions, session_messages, weekly_summaries,
+    )
 
 _client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
 
@@ -41,6 +56,9 @@ def generate_response(
                 system=system_prompt,
                 messages=messages,
             )
+            if not response.content or not hasattr(response.content[0], "text"):
+                logger.error("Risposta Claude vuota o malformata: user=%s flow=%s", profile.telegram_id, flow_name)
+                return LLM_ERROR_MESSAGES["generic"], True
             return response.content[0].text.strip(), False
 
         except anthropic.RateLimitError as e:

@@ -1,9 +1,20 @@
+import asyncio
 import logging
 from datetime import datetime, timezone, timedelta
 from config import STATE_EXPIRY_HOURS
 import services.memory as memory
 
 logger = logging.getLogger(__name__)
+
+
+async def set_state_async(user_id: str, state: str) -> None:
+    """Versione async di set_state — non blocca l'event loop."""
+    await asyncio.to_thread(set_state, user_id, state)
+
+
+async def clear_state_async(user_id: str) -> None:
+    """Versione async di clear_state — non blocca l'event loop."""
+    await asyncio.to_thread(clear_state, user_id)
 
 
 def get_state(user_id: str) -> str:

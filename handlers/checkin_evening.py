@@ -1,4 +1,4 @@
-import logging
+﻿import logging
 from datetime import datetime, timezone
 from telegram import Update
 from telegram.ext import ContextTypes
@@ -17,12 +17,12 @@ _KB_INITIAL = make_keyboard([
     ["Niente di significativo oggi"],
     ["Non ho voglia / ho dubbi"],
 ])
-_KB_SI_NO = make_keyboard([["Sì"], ["No"]])
-_KB_INTENTION = make_keyboard([["Sì"], ["No, non ora"]])
-_KB_CHIUDI = make_keyboard([["Sì, ho un'idea"], ["No, buonanotte"]])
+_KB_SI_NO = make_keyboard([["SÃ¬"], ["No"]])
+_KB_INTENTION = make_keyboard([["SÃ¬"], ["No, non ora"]])
+_KB_CHIUDI = make_keyboard([["SÃ¬, ho un'idea"], ["No, buonanotte"]])
 _KB_TIME = make_keyboard([["Mattina", "Dopo pranzo"], ["Sera", "Non so ancora"]])
-_KB_DURATION = make_keyboard([["15-20 minuti", "Un'ora"], ["Più di un'ora", "Vado a occhio"]])
-_KB_YES_NO_ANCHOR = make_keyboard([["Sì"], ["No, grazie"]])
+_KB_DURATION = make_keyboard([["15-20 minuti", "Un'ora"], ["PiÃ¹ di un'ora", "Vado a occhio"]])
+_KB_YES_NO_ANCHOR = make_keyboard([["SÃ¬"], ["No, grazie"]])
 
 
 async def _reply(update: Update, text: str, keyboard=None) -> None:
@@ -36,7 +36,7 @@ async def _reply(update: Update, text: str, keyboard=None) -> None:
 
 
 async def send_checkin(telegram_id: int, bot) -> None:
-    """Inviato dal scheduler — nessun context Telegram disponibile."""
+    """Inviato dal scheduler â€” nessun context Telegram disponibile."""
     from db.queries import get_or_create_user
     from utils.state_manager import set_state as _set_state
     from services.memory import get_or_create_profile
@@ -44,9 +44,9 @@ async def send_checkin(telegram_id: int, bot) -> None:
     user = get_or_create_user(telegram_id)
     user_id = user["id"]
 
-    # Idempotenza: non inviare se già inviato oggi
+    # Idempotenza: non inviare se giÃ  inviato oggi
     if get_today_checkin(user_id, "evening"):
-        logger.info("Check-in serale già inviato oggi per user=%s", telegram_id)
+        logger.info("Check-in serale giÃ  inviato oggi per user=%s", telegram_id)
         return
 
     save_checkin_session(user_id, {"type": "evening", "date": _today()})
@@ -62,7 +62,7 @@ def _today() -> str:
     return datetime.now(timezone.utc).date().isoformat()
 
 
-# ── Dispatcher ────────────────────────────────────────────────────────────────
+# â”€â”€ Dispatcher â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 async def handle_step(
     update: Update, context: ContextTypes.DEFAULT_TYPE,
@@ -88,10 +88,11 @@ async def handle_step(
         await fn(update, context, user_id, telegram_id, text, profile)
     else:
         logger.warning("Stato check-in serale sconosciuto: %s", state)
-        clear_state(user_id)
+        from utils.fallback import not_understood
+        await not_understood(update, "Scusa, non ho capito. Puoi riformulare?")
 
 
-# ── Initial dispatch ──────────────────────────────────────────────────────────
+# â”€â”€ Initial dispatch â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 async def _start(update, context, user_id, telegram_id, text, profile):
     obj1 = next((o for o in profile.objectives if o.rank == 1), None)
@@ -102,7 +103,7 @@ async def _start(update, context, user_id, telegram_id, text, profile):
         await _reply(
             update,
             f"Il negozio aveva bisogno. Succede.\n"
-            f"C'è stato qualcosa, anche piccolo, per *{obj1_title}*?",
+            f"C'Ã¨ stato qualcosa, anche piccolo, per *{obj1_title}*?",
             _KB_SI_NO,
         )
 
@@ -115,13 +116,13 @@ async def _start(update, context, user_id, telegram_id, text, profile):
         await _reply(update, "Capita. Cosa potrebbe bloccare anche domani?")
 
     else:
-        # "Non ho voglia / ho dubbi" → Scenario C completo (Fase 9)
+        # "Non ho voglia / ho dubbi" â†’ Scenario C completo (Fase 9)
         clear_state(user_id)
         from handlers.scenario_c import start_scenario_c
         await start_scenario_c(update, context, user_id, telegram_id, profile)
 
 
-# ── Scenario A ────────────────────────────────────────────────────────────────
+# â”€â”€ Scenario A â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 async def _a_strategic(update, context, user_id, telegram_id, text, profile):
     if text.lower().startswith("sì") or text.lower().startswith("si"):
@@ -131,7 +132,7 @@ async def _a_strategic(update, context, user_id, telegram_id, text, profile):
         set_state(user_id, "CHECKIN_EVENING_A_INTENTION")
         await _reply(
             update,
-            "Ok. Vuoi dichiarare un'intenzione per domani — anche solo 20 minuti?",
+            "Ok. Vuoi dichiarare un'intenzione per domani â€” anche solo 20 minuti?",
             _KB_INTENTION,
         )
 
@@ -146,7 +147,7 @@ async def _a_what(update, context, user_id, telegram_id, text, profile):
     )
 
 
-# ── Scenario B ────────────────────────────────────────────────────────────────
+# â”€â”€ Scenario B â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 async def _b_what(update, context, user_id, telegram_id, text, profile):
     save_message(user_id, "user", text, flow_name="CHECKIN_EVENING_B")
@@ -164,7 +165,7 @@ async def _b_what(update, context, user_id, telegram_id, text, profile):
         f"Rispecchia l'azione specifica che ha menzionato. "
         f"Collegala concretamente a '{obj1.title if obj1 else 'obiettivo principale'}'.\n"
         f"Poi chiedi: 'Vuoi dichiarare un'intenzione per domani?'\n"
-        f"Non aggiungere i pulsanti nella risposta — li mandiamo noi."
+        f"Non aggiungere i pulsanti nella risposta â€” li mandiamo noi."
     )
     response, is_fallback = generate_response(
         profile=profile,
@@ -175,25 +176,25 @@ async def _b_what(update, context, user_id, telegram_id, text, profile):
 
     streak_msg = ""
     if profile.streak_strategic > 0 and profile.streak_strategic % 5 == 0:
-        streak_msg = f"\n_{profile.streak_strategic}° sessione strategica. Stai tenendo la rotta._"
+        streak_msg = f"\n_{profile.streak_strategic}Â° sessione strategica. Stai tenendo la rotta._"
 
     set_state(user_id, "CHECKIN_EVENING_B_INTENTION")
     await _reply(update, response + streak_msg, _KB_INTENTION)
 
 
-# ── Scenario C ────────────────────────────────────────────────────────────────
+# â”€â”€ Scenario C â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 async def _c_blocker(update, context, user_id, telegram_id, text, profile):
     save_message(user_id, "user", text, flow_name="CHECKIN_EVENING_C")
     set_state(user_id, "CHECKIN_EVENING_C_INTENTION")
     await _reply(
         update,
-        "Vuoi dichiarare un'intenzione minima per domani — anche solo 15 minuti?",
+        "Vuoi dichiarare un'intenzione minima per domani â€” anche solo 15 minuti?",
         _KB_INTENTION,
     )
 
 
-# ── Shared: intention yn ──────────────────────────────────────────────────────
+# â”€â”€ Shared: intention yn â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 async def _ask_intention_yn(update, context, user_id, telegram_id, text, profile):
     if text.lower().startswith("sì") or text.lower().startswith("si"):
@@ -204,7 +205,7 @@ async def _ask_intention_yn(update, context, user_id, telegram_id, text, profile
         await _reply(update, "Hai qualche idea nuova prima di chiudere?", _KB_CHIUDI)
 
 
-# ── Shared: implementation intention sub-flow ─────────────────────────────────
+# â”€â”€ Shared: implementation intention sub-flow â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 async def _intention_text(update, context, user_id, telegram_id, text, profile):
     profile.last_intention_declared = Intention(
@@ -221,7 +222,7 @@ async def _intention_time(update, context, user_id, telegram_id, text, profile):
         profile.last_intention_declared.time_of_day = text
         save_profile(telegram_id, profile)
     set_state(user_id, "CHECKIN_EVENING_INT_DURATION")
-    await _reply(update, "Per quanto tempo — anche un'idea?", _KB_DURATION)
+    await _reply(update, "Per quanto tempo â€” anche un'idea?", _KB_DURATION)
 
 
 async def _intention_duration(update, context, user_id, telegram_id, text, profile):
@@ -232,7 +233,7 @@ async def _intention_duration(update, context, user_id, telegram_id, text, profi
     await _reply(update, "Hai qualche idea nuova prima di chiudere?", _KB_CHIUDI)
 
 
-# ── Universal closing ─────────────────────────────────────────────────────────
+# â”€â”€ Universal closing â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 async def _close(update, context, user_id, telegram_id, text, profile):
     profile.counters.total_checkins_completed += 1

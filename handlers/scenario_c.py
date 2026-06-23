@@ -9,20 +9,20 @@ from utils.formatters import make_keyboard
 
 logger = logging.getLogger(__name__)
 
-# ── Toolkit mentale ───────────────────────────────────────────────────────────
+# â”€â”€ Toolkit mentale â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 _TOOLKIT = {
     "respiro_box": {
         "name": "Respiro box",
-        "instructions": "4 secondi inspira — 4 tieni — 4 espira — 4 tieni. Ripeti 4 volte. È tutto.",
+        "instructions": "4 secondi inspira â€” 4 tieni â€” 4 espira â€” 4 tieni. Ripeti 4 volte. Ãˆ tutto.",
     },
     "gratitudine_pratica": {
         "name": "Gratitudine pratica",
-        "instructions": "Nomina 3 cose per cui sei grata oggi — anche piccole. Scrivile qui se vuoi.",
+        "instructions": "Nomina 3 cose per cui sei grata oggi â€” anche piccole. Scrivile qui se vuoi.",
     },
     "atto_gentilezza": {
         "name": "Un atto di gentilezza",
-        "instructions": "Fai qualcosa di piccolo per qualcuno — un messaggio, un complimento, un pensiero. Non deve essere legato al lavoro.",
+        "instructions": "Fai qualcosa di piccolo per qualcuno â€” un messaggio, un complimento, un pensiero. Non deve essere legato al lavoro.",
     },
     "best_possible_self": {
         "name": "Best possible self",
@@ -34,7 +34,7 @@ _TOOLKIT = {
     },
     "regola_5_percento": {
         "name": "La regola del 5%",
-        "instructions": "Non fare la cosa bene — falla al 5% del meglio. L'obiettivo è solo iniziare.",
+        "instructions": "Non fare la cosa bene â€” falla al 5% del meglio. L'obiettivo è solo iniziare.",
     },
     "non_ancora": {
         "name": "Non ancora",
@@ -49,9 +49,9 @@ _TOOLKIT_BY_CONTEXT = {
 }
 
 _KB_BRANCH = make_keyboard([
-    ["Stanchezza fisica — il corpo non ce la fa"],
-    ["Paura — c'è qualcosa di specifico che mi spaventa"],
-    ["Confusione — non so da dove iniziare"],
+    ["Stanchezza fisica â€” il corpo non ce la fa"],
+    ["Paura â€” c'è qualcosa di specifico che mi spaventa"],
+    ["Confusione â€” non so da dove iniziare"],
 ])
 _KB_SI_NO = make_keyboard([["Sì"], ["No, grazie"]])
 _KB_SAVE = make_keyboard([["Sì, salvala"], ["No"]])
@@ -69,7 +69,7 @@ async def _reply(update: Update, text: str, keyboard=None) -> None:
         await update.callback_query.message.reply_text(text, **kwargs)
 
 
-# ── Entry point ───────────────────────────────────────────────────────────────
+# â”€â”€ Entry point â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 async def start_scenario_c(
     update: Update,
@@ -89,7 +89,7 @@ async def start_scenario_c(
             update,
             f"La volta scorsa che ti sentivi bloccata, hai scritto:\n"
             f"_\"{latest.insight}\"_\n\n"
-            f"È ancora valida questa prospettiva?",
+            f"Ãˆ ancora valida questa prospettiva?",
             _KB_UNLOCK,
         )
     else:
@@ -97,7 +97,7 @@ async def start_scenario_c(
         await _reply(update, "Questo blocco come si sente?", _KB_BRANCH)
 
 
-# ── Dispatcher ────────────────────────────────────────────────────────────────
+# â”€â”€ Dispatcher â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 async def handle_step(
     update: Update,
@@ -132,10 +132,11 @@ async def handle_step(
         await fn(update, context, user_id, telegram_id, text, profile)
     else:
         logger.warning("Stato Scenario C sconosciuto: %s", state)
-        clear_state(user_id)
+        from utils.fallback import not_understood
+        await not_understood(update, "Scusa, non ho capito. Puoi riformulare?")
 
 
-# ── Unlock library ────────────────────────────────────────────────────────────
+# â”€â”€ Unlock library â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 async def _unlock_response(update, context, user_id, telegram_id, text, profile):
     # Registra la risposta (utile per future analisi), poi procede
@@ -176,7 +177,7 @@ async def _classify(update, context, user_id, telegram_id, text, profile):
         )
 
 
-# ── Branch stanchezza ─────────────────────────────────────────────────────────
+# â”€â”€ Branch stanchezza â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 async def _stanchezza_intention(update, context, user_id, telegram_id, text, profile):
     _save_intention(text, profile, telegram_id)
@@ -195,7 +196,7 @@ async def _stanchezza_anchor(update, context, user_id, telegram_id, text, profil
     await _offer_toolkit(update, user_id, telegram_id, profile, "stanchezza")
 
 
-# ── Branch paura ──────────────────────────────────────────────────────────────
+# â”€â”€ Branch paura â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 async def _paura_1(update, context, user_id, telegram_id, text, profile):
     data = profile.scenario_c_data or {}
@@ -233,7 +234,7 @@ async def _paura_3(update, context, user_id, telegram_id, text, profile):
     set_state(user_id, "SCENARIO_C_PAURA_SAVE")
     await _reply(
         update,
-        "Quella risposta che hai appena scritto — è disponibile anche per te.\n"
+        "Quella risposta che hai appena scritto â€” è disponibile anche per te.\n"
         "Vuoi salvarla per rileggertela la prossima volta?",
         _KB_SAVE,
     )
@@ -261,7 +262,7 @@ async def _paura_intention(update, context, user_id, telegram_id, text, profile)
     await _offer_toolkit(update, user_id, telegram_id, profile, "paura")
 
 
-# ── Branch confusione ─────────────────────────────────────────────────────────
+# â”€â”€ Branch confusione â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 async def _confusione_1(update, context, user_id, telegram_id, text, profile):
     data = profile.scenario_c_data or {}
@@ -271,7 +272,7 @@ async def _confusione_1(update, context, user_id, telegram_id, text, profile):
     set_state(user_id, "SCENARIO_C_CONFUSIONE_INT")
     await _reply(
         update,
-        "Ok. Partendo da lì: qual è il passo più piccolo possibile che potresti fare domani?",
+        "Ok. Partendo da lÃ¬: qual è il passo più piccolo possibile che potresti fare domani?",
     )
 
 
@@ -280,7 +281,7 @@ async def _confusione_intention(update, context, user_id, telegram_id, text, pro
     await _offer_toolkit(update, user_id, telegram_id, profile, "confusione")
 
 
-# ── Toolkit mentale ───────────────────────────────────────────────────────────
+# â”€â”€ Toolkit mentale â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 async def _offer_toolkit(update, user_id, telegram_id, profile, branch: str):
     data = profile.scenario_c_data or {}
@@ -290,7 +291,7 @@ async def _offer_toolkit(update, user_id, telegram_id, profile, branch: str):
     set_state(user_id, "SCENARIO_C_TOOLKIT")
     await _reply(
         update,
-        "C'è una tecnica veloce — 2-3 minuti — che a volte aiuta in momenti come questo. "
+        "C'è una tecnica veloce â€” 2-3 minuti â€” che a volte aiuta in momenti come questo. "
         "Vuoi provarla?",
         _KB_TOOLKIT,
     )
@@ -323,7 +324,7 @@ async def _finish(update, user_id, telegram_id, profile):
     await _reply(update, "In bocca al lupo per domani.")
 
 
-# ── Helper ────────────────────────────────────────────────────────────────────
+# â”€â”€ Helper â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 def _save_intention(text: str, profile: UserProfileData, telegram_id: int) -> None:
     profile.last_intention_declared = Intention(

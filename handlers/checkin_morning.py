@@ -29,7 +29,7 @@ async def _reply(update: Update, text: str, keyboard=None) -> None:
 
 
 async def send_if_needed(telegram_id: int, bot) -> None:
-    """Inviato dal scheduler — solo se intenzione dichiarata e reminder non ancora inviato."""
+    """Inviato dal scheduler â€” solo se intenzione dichiarata e reminder non ancora inviato."""
     from db.queries import get_or_create_user
 
     user = get_or_create_user(telegram_id)
@@ -48,7 +48,7 @@ async def send_if_needed(telegram_id: int, bot) -> None:
         text=(
             f"Buongiorno. Ieri sera hai detto che oggi avresti lavorato su:\n"
             f"_\"{intention.text}\"_\n\n"
-            f"È ancora il piano?"
+            f"Ãˆ ancora il piano?"
         ),
         reply_markup=_KB_INITIAL,
         parse_mode="Markdown",
@@ -56,7 +56,7 @@ async def send_if_needed(telegram_id: int, bot) -> None:
     logger.info("Check-in mattutino inviato: user=%s", telegram_id)
 
 
-# ── Dispatcher ────────────────────────────────────────────────────────────────
+# â”€â”€ Dispatcher â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 async def handle_step(
     update: Update, context: ContextTypes.DEFAULT_TYPE,
@@ -74,10 +74,11 @@ async def handle_step(
         await fn(update, context, user_id, telegram_id, text, profile)
     else:
         logger.warning("Stato check-in mattutino sconosciuto: %s", state)
-        clear_state(user_id)
+        from utils.fallback import not_understood
+        await not_understood(update, "Scusa, non ho capito. Puoi riformulare?")
 
 
-# ── Step implementations ──────────────────────────────────────────────────────
+# â”€â”€ Step implementations â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 async def _start(update, context, user_id, telegram_id, text, profile):
     if text == "Sì, è il piano":

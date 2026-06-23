@@ -29,7 +29,7 @@ async def _reply(update: Update, text: str, keyboard=None) -> None:
         await update.callback_query.message.reply_text(text, **kwargs)
 
 
-# ── Entry point (scheduler) ───────────────────────────────────────────────────
+# â”€â”€ Entry point (scheduler) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 async def send_weekly_review(telegram_id: int, bot) -> None:
     from db.queries import get_or_create_user
@@ -48,13 +48,13 @@ async def send_weekly_review(telegram_id: int, bot) -> None:
         text=(
             "Settimana appena finita.\n\n"
             "Prima di guardare i numeri: cosa hai fatto questa settimana "
-            "di cui sei soddisfatta — anche una sola cosa?"
+            "di cui sei soddisfatta â€” anche una sola cosa?"
         ),
         parse_mode="Markdown",
     )
 
 
-# ── Dispatcher ────────────────────────────────────────────────────────────────
+# â”€â”€ Dispatcher â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 async def handle_step(
     update: Update,
@@ -85,10 +85,11 @@ async def handle_step(
         await fn(update, context, user_id, telegram_id, text, profile)
     else:
         logger.warning("Stato revisione settimanale sconosciuto: %s", state)
-        clear_state(user_id)
+        from utils.fallback import not_understood
+        await not_understood(update, "Scusa, non ho capito. Puoi riformulare?")
 
 
-# ── Step 1: Progresso soggettivo ──────────────────────────────────────────────
+# â”€â”€ Step 1: Progresso soggettivo â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 async def _progress_q(update, context, user_id, telegram_id, text, profile):
     data = profile.weekly_review_data or {}
@@ -105,14 +106,14 @@ async def _progress_q(update, context, user_id, telegram_id, text, profile):
     summary_lines = [
         f"*{text}*",
         "",
-        "→ Sessioni strategiche: *{}*".format(c.total_strategic_sessions),
-        "→ Idee nel parcheggio: *{}* in attesa".format(
+        "â†’ Sessioni strategiche: *{}*".format(c.total_strategic_sessions),
+        "â†’ Idee nel parcheggio: *{}* in attesa".format(
             len([p for p in profile.parking_lot if p.status == "parked"])
         ),
     ]
     if c.consecutive_weeks_under_target >= 2:
         summary_lines.append(
-            f"\nQuesta è la *{c.consecutive_weeks_under_target}ª settimana consecutiva* "
+            f"\nQuesta è la *{c.consecutive_weeks_under_target}Âª settimana consecutiva* "
             f"sotto obiettivo per Oltre la Bottega."
         )
 
@@ -121,7 +122,7 @@ async def _progress_q(update, context, user_id, telegram_id, text, profile):
     await _reply(update, "\n".join(summary_lines), _KB_EVAL)
 
 
-# ── Step 2: Valutazione ───────────────────────────────────────────────────────
+# â”€â”€ Step 2: Valutazione â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 async def _evaluation(update, context, user_id, telegram_id, text, profile):
     data = profile.weekly_review_data or {}
@@ -134,7 +135,7 @@ async def _evaluation(update, context, user_id, telegram_id, text, profile):
         set_state(user_id, "WEEKLY_REVIEW_PATTERN_OP")
         await _reply(
             update,
-            "Questa settimana — e quella prima — sono state completamente operative.\n"
+            "Questa settimana â€” e quella prima â€” sono state completamente operative.\n"
             "Vuoi capire cosa sta succedendo o preferisci solo registrarlo?",
             _KB_PATTERN_OP,
         )
@@ -155,7 +156,7 @@ async def _evaluation(update, context, user_id, telegram_id, text, profile):
     await _go_to_hours(update, user_id, telegram_id, profile)
 
 
-# ── Pattern recognition ───────────────────────────────────────────────────────
+# â”€â”€ Pattern recognition â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 async def _pattern_operative(update, context, user_id, telegram_id, text, profile):
     await _go_to_hours(update, user_id, telegram_id, profile)
@@ -179,7 +180,7 @@ async def _go_to_hours(update, user_id, telegram_id, profile):
         await _go_to_parking(update, user_id, telegram_id, profile)
 
 
-# ── Step 3: Ore target ────────────────────────────────────────────────────────
+# â”€â”€ Step 3: Ore target â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 async def _hours_response(update, context, user_id, telegram_id, text, profile):
     if "diversamente" in text.lower():
@@ -201,7 +202,7 @@ async def _hours_why(update, context, user_id, telegram_id, text, profile):
     await _go_to_parking(update, user_id, telegram_id, profile)
 
 
-# ── Step 4: Parcheggio ────────────────────────────────────────────────────────
+# â”€â”€ Step 4: Parcheggio â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 async def _go_to_parking(update, user_id, telegram_id, profile):
     active = [p for p in profile.parking_lot if p.status == "parked"]
@@ -262,7 +263,7 @@ async def _show_parking_item(update, profile):
         return
 
     thirty_days_ago = datetime.now(timezone.utc) - timedelta(days=30)
-    old_tag = " ⏰ _In attesa da 30+ giorni_" if item.created_at < thirty_days_ago else ""
+    old_tag = " â° _In attesa da 30+ giorni_" if item.created_at < thirty_days_ago else ""
 
     await _reply(
         update,
@@ -307,7 +308,7 @@ async def _parking_item(update, context, user_id, telegram_id, text, profile):
         await _show_parking_item(update, profile)
 
 
-# ── Flusso sviluppo idea (3 domande) ─────────────────────────────────────────
+# â”€â”€ Flusso sviluppo idea (3 domande) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 async def _parking_dev1(update, context, user_id, telegram_id, text, profile):
     data = profile.weekly_review_data or {}
@@ -315,7 +316,7 @@ async def _parking_dev1(update, context, user_id, telegram_id, text, profile):
     profile.weekly_review_data = data
     save_profile(telegram_id, profile)
     set_state(user_id, "WEEKLY_REVIEW_PARKING_DEV2")
-    await _reply(update, "Quanto tempo richiederebbe a regime — ore a settimana?")
+    await _reply(update, "Quanto tempo richiederebbe a regime â€” ore a settimana?")
 
 
 async def _parking_dev2(update, context, user_id, telegram_id, text, profile):
@@ -351,7 +352,7 @@ async def _parking_dev3(update, context, user_id, telegram_id, text, profile):
         await _show_parking_item(update, profile)
 
 
-# ── Step 5: Chiusura ─────────────────────────────────────────────────────────
+# â”€â”€ Step 5: Chiusura â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 async def _go_to_close(update, user_id, telegram_id, profile):
     set_state(user_id, "WEEKLY_REVIEW_CLOSE")

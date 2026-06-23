@@ -19,7 +19,7 @@ _CATEGORY_LABELS = {
 
 _TRIGGER_PHRASES = {"sì, ho un'idea", "si, ho un'idea", "sì ho un'idea"}
 
-_KB_CONFIRM = make_keyboard([["✓ Corretto", "✗ Non è questo"]])
+_KB_CONFIRM = make_keyboard([["âœ“ Corretto", "âœ— Non è questo"]])
 _KB_CATEGORY = make_keyboard([["Per il Negozio"], ["Per Oltre la Bottega"], ["Altro"]])
 _KB_REDIRECT = make_keyboard([["Sì, torno a qualcosa"], ["No, grazie"]])
 
@@ -34,7 +34,7 @@ async def _reply(update: Update, text: str, keyboard=None) -> None:
         await update.callback_query.message.reply_text(text, **kwargs)
 
 
-# ── Entry point ───────────────────────────────────────────────────────────────
+# â”€â”€ Entry point â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 async def start_parking(
     update: Update,
@@ -52,7 +52,7 @@ async def start_parking(
         await _classify_and_confirm(update, user_id, telegram_id, text, profile)
 
 
-# ── Dispatcher ────────────────────────────────────────────────────────────────
+# â”€â”€ Dispatcher â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 async def handle_step(
     update: Update,
@@ -80,10 +80,11 @@ async def handle_step(
         await fn(update, context, user_id, telegram_id, text, profile)
     else:
         logger.warning("Stato parcheggio sconosciuto: %s", state)
-        clear_state(user_id)
+        from utils.fallback import not_understood
+        await not_understood(update, "Scusa, non ho capito. Puoi riformulare?")
 
 
-# ── Steps ─────────────────────────────────────────────────────────────────────
+# â”€â”€ Steps â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 async def _capture(update, context, user_id, telegram_id, text, profile):
     await _classify_and_confirm(update, user_id, telegram_id, text, profile)
@@ -110,7 +111,7 @@ async def _classify_and_confirm(update, user_id, telegram_id, text, profile):
 
 
 async def _confirm(update, context, user_id, telegram_id, text, profile):
-    if "✓" in text or "corretto" in text.lower():
+    if "âœ“" in text or "corretto" in text.lower():
         await _save_idea(update, user_id, telegram_id, profile)
     else:
         set_state(user_id, "PARKING_CORRECT")
@@ -163,7 +164,7 @@ async def _redirect(update, context, user_id, telegram_id, text, profile):
         await _reply(update, "Ok.")
 
 
-# ── Parking pieno ─────────────────────────────────────────────────────────────
+# â”€â”€ Parking pieno â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 async def _show_full_parking(update, user_id, telegram_id, text, profile):
     active = [p for p in profile.parking_lot if p.status == "parked"]

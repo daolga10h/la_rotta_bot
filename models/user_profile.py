@@ -52,6 +52,8 @@ class ReEngagement(BaseModel):
 
 class UserProfileData(BaseModel):
     telegram_id: int
+    user_name: Optional[str] = None
+    user_gender: Optional[str] = None  # "M" | "F" | None
     objectives_version: int = 1
     objectives: list[Objective] = Field(default_factory=list)
     motivation_anchor: Optional[str] = None

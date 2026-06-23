@@ -71,11 +71,41 @@ def test_parse_review_default():
 # ── step transitions ──────────────────────────────────────────────────────────
 
 @pytest.mark.asyncio
+async def test_step0_saves_name_and_asks_gender():
+    profile = _make_profile()
+    update = _make_update("Olga")
+    with patch("handlers.onboarding.save_profile") as mock_save, \
+         patch("handlers.onboarding.set_state") as mock_state:
+        from handlers.onboarding import _step0
+        await _step0(update, MagicMock(), "uid", 12345, "Olga", profile)
+        assert profile.user_name == "Olga"
+        assert profile.onboarding_step == 0
+        mock_save.assert_called_once()
+        mock_state.assert_called_once_with("uid", "ONBOARDING_0B")
+
+
+@pytest.mark.asyncio
+async def test_step0b_saves_gender_and_advances():
+    profile = _make_profile()
+    profile.user_name = "Olga"
+    update = _make_callback("Al femminile")
+    with patch("handlers.onboarding.save_profile") as mock_save, \
+         patch("handlers.onboarding.set_state") as mock_state, \
+         patch("handlers.onboarding.generate_response", return_value=("Ciao Olga! Cosa fai?", False)):
+        from handlers.onboarding import _step0b
+        await _step0b(update, MagicMock(), "uid", 12345, "Al femminile", profile)
+        assert profile.user_gender == "F"
+        assert profile.onboarding_step == 1
+        mock_state.assert_called_once_with("uid", "ONBOARDING_1")
+
+
+@pytest.mark.asyncio
 async def test_step1_saves_context_and_advances():
     profile = _make_profile()
     update = _make_update("Gestisco una bottega artigianale")
     with patch("handlers.onboarding.save_profile") as mock_save, \
-         patch("handlers.onboarding.set_state") as mock_state:
+         patch("handlers.onboarding.set_state") as mock_state, \
+         patch("handlers.onboarding.generate_response", return_value=("Capisco. Qual è l'obiettivo più importante?", False)):
         from handlers.onboarding import _step1
         await _step1(update, MagicMock(), "uid", 12345, "Gestisco una bottega artigianale", profile)
         assert profile.user_context == "Gestisco una bottega artigianale"
@@ -89,7 +119,8 @@ async def test_step2_saves_first_objective():
     profile = _make_profile()
     update = _make_update("Portare il negozio a livello premium")
     with patch("handlers.onboarding.save_profile"), \
-         patch("handlers.onboarding.set_state") as mock_state:
+         patch("handlers.onboarding.set_state") as mock_state, \
+         patch("handlers.onboarding.generate_response", return_value=("Obiettivo chiaro. Ce n'è un secondo?", False)):
         from handlers.onboarding import _step2
         await _step2(update, MagicMock(), "uid", 12345, "Portare il negozio a livello premium", profile)
         assert len(profile.objectives) == 1
@@ -123,10 +154,11 @@ async def test_step2_more_no_goes_to_step4():
 async def test_step2b_more_no_asks_hours_for_obj2():
     profile = _make_profile(objectives=[
         Objective(title="Obj1", rank=1),
-        Objective(title="Oltre la Bottega", rank=2),
+        Objective(title="Lanciare corso online", rank=2),
     ])
     update = _make_callback("No, è tutto")
-    with patch("handlers.onboarding.set_state") as mock_state:
+    with patch("handlers.onboarding.set_state") as mock_state, \
+         patch("handlers.onboarding._is_actionable_project", return_value=True):
         from handlers.onboarding import _step2b_more
         await _step2b_more(update, MagicMock(), "uid", 12345, "No, è tutto", profile)
         mock_state.assert_called_once_with("uid", "ONBOARDING_3")
@@ -153,7 +185,8 @@ async def test_step4_saves_anchor_and_asks_checkin_time():
     profile = _make_profile()
     update = _make_update("Casa a Marta e più tempo per me")
     with patch("handlers.onboarding.save_profile"), \
-         patch("handlers.onboarding.set_state") as mock_state:
+         patch("handlers.onboarding.set_state") as mock_state, \
+         patch("handlers.onboarding.generate_response", return_value=("Questo conta. A che ora il check-in?", False)):
         from handlers.onboarding import _step4
         await _step4(update, MagicMock(), "uid", 12345, "Casa a Marta e più tempo per me", profile)
         assert profile.motivation_anchor == "Casa a Marta e più tempo per me"
@@ -176,8 +209,8 @@ async def test_step5_default_time_keeps_2130():
 async def test_step5b_parses_custom_time():
     profile = _make_profile()
     update = _make_update("20:00")
-    with patch("handlers.onboarding.save_profile"), \
-         patch("handlers.onboarding.set_state"):
+    with patch("handlers.onboarding.save_profile_async", new_callable=AsyncMock), \
+         patch("handlers.onboarding.set_state_async", new_callable=AsyncMock):
         from handlers.onboarding import _step5b
         await _step5b(update, MagicMock(), "uid", 12345, "20:00", profile)
         assert profile.checkin_time_evening == "20:00"

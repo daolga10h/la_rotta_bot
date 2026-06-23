@@ -21,7 +21,7 @@ _CATEGORY_LABELS = {
     "FEEDBACK": "un commento su una mia risposta",
 }
 
-_KB_CONFIRM = make_keyboard([["✓ Corretto", "✗ Non è questo"]])
+_KB_CONFIRM = make_keyboard([["âœ“ Corretto", "âœ— Non è questo"]])
 _KB_CATEGORIES = make_keyboard([
     ["Un'idea"],
     ["Un aggiornamento"],
@@ -42,7 +42,7 @@ async def _reply(update: Update, text: str, keyboard=None) -> None:
         await update.callback_query.message.reply_text(text, **kwargs)
 
 
-# ── Entry point (stato IDLE) ──────────────────────────────────────────────────
+# â”€â”€ Entry point (stato IDLE) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 async def handle_free_message(
     update: Update,
@@ -68,7 +68,7 @@ async def handle_free_message(
     await _show_confirmation(update, user_id, telegram_id, text, profile, category)
 
 
-# ── Dispatcher per stati FREE_MSG ─────────────────────────────────────────────
+# â”€â”€ Dispatcher per stati FREE_MSG â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 async def handle_step(
     update: Update,
@@ -90,10 +90,11 @@ async def handle_step(
         await fn(update, context, user_id, telegram_id, text, profile)
     else:
         logger.warning("Stato FREE_MSG sconosciuto: %s", state)
-        clear_state(user_id)
+        from utils.fallback import not_understood
+        await not_understood(update, "Scusa, non ho capito. Puoi riformulare?")
 
 
-# ── Conferma categoria ────────────────────────────────────────────────────────
+# â”€â”€ Conferma categoria â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 async def _show_confirmation(update, user_id, telegram_id, text, profile, category):
     profile.free_msg_pending = {"text": text, "category": category}
@@ -101,11 +102,11 @@ async def _show_confirmation(update, user_id, telegram_id, text, profile, catego
     set_state(user_id, "FREE_MSG_CONFIRM")
 
     label = _CATEGORY_LABELS.get(category, "qualcosa")
-    await _reply(update, f"Ho capito: {label}.\n✓ Corretto  |  ✗ Non è questo", _KB_CONFIRM)
+    await _reply(update, f"Ho capito: {label}.\nâœ“ Corretto  |  âœ— Non è questo", _KB_CONFIRM)
 
 
 async def _confirm(update, context, user_id, telegram_id, text, profile):
-    if "✓" in text or "corretto" in text.lower():
+    if "âœ“" in text or "corretto" in text.lower():
         pending = profile.free_msg_pending or {}
         category = pending.get("category", "AMBIGUO")
         original_text = pending.get("text", "")
@@ -141,7 +142,7 @@ async def _correct_category(update, context, user_id, telegram_id, text, profile
     await _route_by_category(update, context, user_id, telegram_id, original_text, profile, category)
 
 
-# ── Disambiguazione AMBIGUO ───────────────────────────────────────────────────
+# â”€â”€ Disambiguazione AMBIGUO â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 async def _ask_clarification(update, user_id, telegram_id, text, profile, result):
     profile.free_msg_pending = {"text": text, "category": result.get("category", "AMBIGUO")}
@@ -162,7 +163,7 @@ async def _ask_clarification(update, user_id, telegram_id, text, profile, result
         await _reply(update, "Di cosa si tratta?", _KB_CATEGORIES)
 
 
-# ── Routing per categoria ─────────────────────────────────────────────────────
+# â”€â”€ Routing per categoria â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 async def _route_by_category(update, context, user_id, telegram_id, text, profile, category):
     if category == "IDEA":
@@ -186,7 +187,7 @@ async def _route_by_category(update, context, user_id, telegram_id, text, profil
         await _reply(update, "Ok, ho capito.")
 
 
-# ── UPDATE ────────────────────────────────────────────────────────────────────
+# â”€â”€ UPDATE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 async def _handle_update(update, context, user_id, telegram_id, text, profile):
     save_message(user_id, "assistant", "", flow_name="UPDATE")
@@ -194,7 +195,7 @@ async def _handle_update(update, context, user_id, telegram_id, text, profile):
     obj1 = next((o for o in profile.objectives if o.rank == 1), None)
     flow_instructions = (
         f"L'utente ha condiviso un aggiornamento: \"{text}\".\n"
-        f"Rispecchia brevemente l'azione menzionata — usa le sue parole.\n"
+        f"Rispecchia brevemente l'azione menzionata â€” usa le sue parole.\n"
         f"Collegala se possibile a '{obj1.title if obj1 else 'obiettivo principale'}'.\n"
         f"Poi chiedi: 'Vuoi dichiarare un'intenzione per domani su questo?'"
     )
@@ -227,7 +228,7 @@ async def _update_intention(update, context, user_id, telegram_id, text, profile
         await _reply(update, "Ok.")
 
 
-# ── DOMANDA ───────────────────────────────────────────────────────────────────
+# â”€â”€ DOMANDA â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 async def _handle_domanda(update, context, user_id, telegram_id, text, profile):
     text_lower = text.lower()
@@ -236,7 +237,7 @@ async def _handle_domanda(update, context, user_id, telegram_id, text, profile):
     if "parcheggio" in text_lower or "idee" in text_lower:
         active = [p for p in profile.parking_lot if p.status == "parked"]
         if active:
-            lista = "\n".join(f"• {p.content} _{p.category}_" for p in active)
+            lista = "\n".join(f"â€¢ {p.content} _{p.category}_" for p in active)
             await _reply(update, f"Nel parcheggio hai *{len(active)} {'idea' if len(active)==1 else 'idee'}*:\n{lista}")
         else:
             await _reply(update, "Il parcheggio è vuoto al momento.")
@@ -255,7 +256,7 @@ async def _handle_domanda(update, context, user_id, telegram_id, text, profile):
         await _reply(update, f"Hai fatto *{profile.counters.total_strategic_sessions}* sessioni strategiche in totale.\nStreak attuale: *{profile.streak_strategic}*.")
         return
 
-    # Domanda generica → Claude risponde con contesto profilo
+    # Domanda generica â†’ Claude risponde con contesto profilo
     from db.queries import get_recent_weekly_summaries, get_or_create_user
     user = get_or_create_user(telegram_id)
     summaries = get_recent_weekly_summaries(user["id"], limit=3)
@@ -270,7 +271,7 @@ async def _handle_domanda(update, context, user_id, telegram_id, text, profile):
     await _reply(update, response)
 
 
-# ── FEEDBACK ──────────────────────────────────────────────────────────────────
+# â”€â”€ FEEDBACK â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 async def _handle_feedback(update, user_id, telegram_id, text, profile):
     save_message(user_id, "user", text, classified_as="FEEDBACK", flow_name="FEEDBACK")

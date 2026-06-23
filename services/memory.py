@@ -1,9 +1,15 @@
+import asyncio
 import logging
 from datetime import datetime, timezone
 from models.user_profile import UserProfileData
 from db import queries
 
 logger = logging.getLogger(__name__)
+
+
+async def save_profile_async(telegram_id: int, profile: UserProfileData) -> None:
+    """Versione async di save_profile — non blocca l'event loop."""
+    await asyncio.to_thread(save_profile, telegram_id, profile)
 
 
 def _get_user_id(telegram_id: int) -> str:
